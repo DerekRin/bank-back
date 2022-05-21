@@ -4,7 +4,13 @@ const { Category, Product } = require("../../models");
 // The `/api/categories` endpoint
 
 router.get("/", (req, res) => {
-  Category.findAll()
+  Category.findAll({
+    include: [
+      {
+        model: Product,
+      },
+    ],
+  })
     .then((dbCategoryData) => res.json(dbCategoryData))
     .catch((err) => {
       console.log(err);
@@ -13,11 +19,20 @@ router.get("/", (req, res) => {
 });
 
 router.get("/:id", (req, res) => {
-  Category.findOne({ _id: params.id })
+  Category.findOne({
+    include: [
+      {
+        model: Product,
+      },
+    ],
+    where: {
+      id: req.params.id,
+    },
+  })
     .select("-__v")
     .then((dbCategoryData) => {
       if (!dbCategoryData) {
-        res.status(404).json({ message: "No thoughts found with this id!" });
+        res.status(404).json({ message: "No category found with this id!" });
         return;
       }
       res.json(dbCategoryData);
@@ -29,11 +44,7 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  Category.create({
-    comment_text: req.body.comment_text,
-    user_id: req.body.user_id,
-    post_id: req.body.post_id,
-  })
+  Category.create(req.body)
     .then((dbCategoryData) => res.json(dbCategoryData))
     .catch((err) => {
       console.log(err);
